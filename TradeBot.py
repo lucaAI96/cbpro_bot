@@ -23,6 +23,7 @@ class TradeBot:
         self.accounts = self.auth_client.get_accounts()
         self.currencies = {"crypto": [], "cash": []}
         self.funds = dict()
+        self.order_book = dict()
 
     '''
     Returns a list of all currencies currently used by the trade bot.
@@ -46,6 +47,12 @@ class TradeBot:
                 balance = account["balance"]
                 self.funds[key] = balance
 
+    def update_order_book(self, level=1):
+        for crypto in self.currencies["crypto"]:
+            for cash in self.currencies["cash"]:
+                pair = '-'.join((crypto, cash))
+                self.order_book[pair] = self.auth_client.get_product_order_book(pair, level=level)
+
     '''
     Add a currency to the trade bot so it can be traded. Also add available funds of that currency to the funds dict.
     '''
@@ -54,6 +61,7 @@ class TradeBot:
             self.currencies[type].append(name)
             self.update_accounts()
             self.update_funds()
+            self.update_order_book()
         else:
             print(f"Cannot add currency {name} of type {type} to currencies.")
             if type not in self.currencies.keys():
@@ -102,3 +110,4 @@ trade_bot.add_currency(type="cash", name="EUR")
 
 print(trade_bot)
 print(f"funds: {trade_bot.get_funds()}")
+print(trade_bot.order_book)
