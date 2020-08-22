@@ -11,12 +11,15 @@ Args:
     time_frame (int):
     system_id (int):
     system_label (str): descriptive name for the system
+    buy_order_size (float):
+    sell_order_size (float):
 """
 
 PortfolioManagementSystem(crypto='BTC',
                           cash='EUR',
-                          buy_order_size=10.0,
-                          sell_order_size=0.001,
                           time_frame=60,
                           system_id=1,
-                          system_label='BTC_Bot')
+                          system_label='BTC_Bot',
+                          buy_order_size=10.0,
+                          sell_order_size=0.001
+                          )

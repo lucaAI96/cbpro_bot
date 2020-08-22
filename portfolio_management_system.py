@@ -38,14 +38,14 @@ class PortfolioManagementSystem(TradingSystem):
         self.update_accounts()
         self.update_funds()
 
-        if self.funds[self.cash] >= self.buy_order_size:   # funds >= buy_order_size
+        if self.funds[self.cash] >= self.buy_order_size:
             pass
-        else:                                                   # insufficient funds
+        else:
             return "Insufficient funds"
 
         msg = self.client.place_market_order(product_id=self.product_id,
-                                       side='buy',
-                                       funds=str(self.buy_order_size))
+                                             side='buy',
+                                             funds=str(self.buy_order_size))
 
         return msg
 
@@ -54,14 +54,14 @@ class PortfolioManagementSystem(TradingSystem):
         self.update_accounts()
         self.update_funds()
 
-        if self.funds[self.crypto] >= self.sell_order_size: # funds >= sell_order_size
+        if self.funds[self.crypto] >= self.sell_order_size:
             pass
-        else:                                                       # insufficient funds
+        else:
             return "Insufficient funds"
 
         msg = self.client.place_market_order(product_id=self.product_id,
-                                       side='sell',
-                                       size=str(self.sell_order_size))
+                                             side='sell',
+                                             size=str(self.sell_order_size))
 
         return msg
 
@@ -124,8 +124,8 @@ class PortfolioManagementSystem(TradingSystem):
     Returns fields:
         trade_id, price, size, time, bid, ask, volume
     """
-    def get_last_trade(self, crypto=None, cash=None):
-        return self.client.get_product_ticker(product_id='-'.join((crypto, cash)))
+    def get_last_trade(self):
+        return self.client.get_product_ticker(product_id=self.product_id)
 
     """
     Show what the trade bot does.
@@ -149,7 +149,7 @@ class PortfolioManagementSystem(TradingSystem):
             print(self.order_book)
 
             last_close = this_close
-            this_close = float(self.get_last_trade('BTC', 'EUR')["price"])
+            this_close = float(self.get_last_trade()["price"])
 
             if last_close != 0:
                 #sys.exit()
@@ -157,32 +157,10 @@ class PortfolioManagementSystem(TradingSystem):
 
             msg = None
 
-            if self.AI.check_buy(delta):
+            if self.AI.check_buy(delta) and self.funds[self.cash] >= self.buy_order_size:
                 msg = self.place_buy_order()
-            elif self.AI.check_sell(delta):
+            elif self.AI.check_sell(delta) and self.funds[self.crypto] >= self.sell_order_size:
                 msg = self.place_sell_order()
 
             if msg:
                 print(msg)
-
-
-            # TODO: replace this stuff
-            '''# Request EoD data for IBM
-            data_req = self.api.get_barset('IBM', timeframe='1D', limit=1).df
-            # Construct dataframe to predict
-            x = pd.DataFrame(
-                data=[[
-                    data_req['IBM']['close'][0]]], columns='Close'.split()
-            )
-            if(day_count == 7):
-                day_count = 0
-                last_weeks_close = this_weeks_close
-                this_weeks_close = x['Close']
-                delta = this_weeks_close - last_weeks_close
-
-                # AI choosing to buy, sell, or hold
-                if np.around(self.AI.network.predict([delta])) <= -.5:
-                    self.place_sell_order()
-
-                elif np.around(self.AI.network.predict([delta]) >= .5):
-                    self.place_buy_order()'''
